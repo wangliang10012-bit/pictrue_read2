@@ -9,22 +9,22 @@ on:
 jobs:
   build:
     runs-on: ubuntu-latest
-
+    
     steps:
       - name: Checkout code
         uses: actions/checkout@v4
-
+        
       - name: Set up Python 3.11
         uses: actions/setup-python@v5
         with:
           python-version: '3.11'
-
+          
       - name: Set up Java
         uses: actions/setup-java@v4
         with:
           java-version: '17'
           distribution: 'temurin'
-
+          
       - name: Install Android SDK
         run: |
           # 创建 SDK 目录
@@ -96,7 +96,7 @@ jobs:
           
           # 开始打包
           buildozer -v android debug
-
+          
       - name: Upload APK
         uses: actions/upload-artifact@v4
         with:
