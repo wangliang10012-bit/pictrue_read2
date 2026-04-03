@@ -8,74 +8,35 @@ on:
 
 jobs:
   build:
-    runs-on: ubuntu-latest
-    
+    runs-on: ubuntu-20.04
+
     steps:
       - name: Checkout code
-        uses: actions/checkout@v4
-        
-      - name: Set up Python 3.11
-        uses: actions/setup-python@v5
-        with:
-          python-version: '3.11'
-          
-      - name: Set up Java
-        uses: actions/setup-java@v4
-        with:
-          java-version: '17'
-          distribution: 'temurin'
-          
-      - name: Install Android SDK
-        run: |
-          # 创建 SDK 目录
-          mkdir -p /opt/android-sdk
-          cd /opt/android-sdk
-          
-          # 下载并安装命令行工具
-          wget -q https://dl.google.com/android/repository/commandlinetools-linux-11076708_latest.zip
-          unzip -q commandlinetools-linux-11076708_latest.zip
-          mkdir -p cmdline-tools
-          mv cmdline-tools latest 2>/dev/null || true
-          
-          # 设置环境变量
-          export ANDROID_HOME=/opt/android-sdk
-          export PATH=$PATH:$ANDROID_HOME/cmdline-tools/latest/bin:$ANDROID_HOME/platform-tools
-          
-          # 接受许可证（修复 broken pipe 错误）
-          sdkmanager --licenses << EOF
-          y
-          y
-          y
-          y
-          y
-          EOF
-          
-          # 安装所有必要的组件
-          echo "Installing Android SDK components..."
-          sdkmanager "platform-tools"
-          sdkmanager "platforms;android-33"
-          sdkmanager "build-tools;33.0.2"
-          sdkmanager "ndk;25.2.9519653"
-          
-          # 验证 aidl 是否安装
-          echo "Checking aidl installation..."
-          find /opt/android-sdk -name "aidl" -type f || true
+        uses: actions/checkout@v2
 
-      - name: Fix buildozer.spec
-        run: |
-          # 修改 buildozer.spec，使用 android.archs 替代 android.arch
-          sed -i 's/android.arch =/android.archs =/g' buildozer.spec
-          # 确保 android.api 设置为 33
-          sed -i 's/android.api = .*/android.api = 33/' buildozer.spec
+      - name: Set up Python 3.8
+        uses: actions/setup-python@v2
+        with:
+          python-version: '3.8'
 
       - name: Install dependencies
         run: |
           python -m pip install --upgrade pip
-          pip install buildozer cython pillow kivy==2.2.0
+          pip install buildozer cython==0.29.36 pillow kivy==2.1.0
 
       - name: Build APK with Buildozer
-        env:
-          ANDROID_HOME: /opt/android-sdk
-          ANDROID_SDK_ROOT: /opt/android-sdk
-          ANDROID_NDK_HOME: /opt/android-sdk/ndk/25.2.9519653
-          PATH: /opt
+        run: |
+          # 确保 spec 文件存在
+          if [ ! -f buildozer.spec ]; then
+            echo "Error: buildozer.spec not found!"
+            exit 1
+          fi
+          
+          # 打包
+          buildozer android debug
+
+      - name: Upload APK
+        uses: actions/upload-artifact@v2
+        with:
+          name: app-debug
+          path: bin/*.apk
