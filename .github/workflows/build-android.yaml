@@ -27,26 +27,40 @@ jobs:
 
       - name: Install Android SDK
         run: |
-          # 安装 Android SDK 命令行工具
-          mkdir -p /opt/android-sdk/cmdline-tools
-          cd /opt/android-sdk/cmdline-tools
-          wget https://dl.google.com/android/repository/commandlinetools-linux-11076708_latest.zip
-          unzip commandlinetools-linux-11076708_latest.zip
-          mv cmdline-tools latest
-
-      - name: Install Android Build Tools
-        run: |
+          # 创建 SDK 目录
+          mkdir -p /opt/android-sdk
+          cd /opt/android-sdk
+          
+          # 下载并安装命令行工具
+          wget -q https://dl.google.com/android/repository/commandlinetools-linux-11076708_latest.zip
+          unzip -q commandlinetools-linux-11076708_latest.zip
+          mkdir -p cmdline-tools
+          mv cmdline-tools latest 2>/dev/null || true
+          
+          # 设置环境变量
           export ANDROID_HOME=/opt/android-sdk
           export PATH=$PATH:$ANDROID_HOME/cmdline-tools/latest/bin:$ANDROID_HOME/platform-tools
           
           # 接受许可证
-          yes | sdkmanager --licenses
+          yes | sdkmanager --licenses >/dev/null 2>&1
           
-          # 安装必要的组件
+          # 安装所有必要的组件
+          echo "Installing Android SDK components..."
           sdkmanager "platform-tools"
           sdkmanager "platforms;android-33"
           sdkmanager "build-tools;33.0.2"
           sdkmanager "ndk;25.2.9519653"
+          
+          # 验证 aidl 是否安装
+          echo "Checking aidl installation..."
+          find /opt/android-sdk -name "aidl" -type f
+
+      - name: Fix buildozer.spec
+        run: |
+          # 修改 buildozer.spec，使用 android.archs 替代 android.arch
+          sed -i 's/android.arch =/android.archs =/g' buildozer.spec
+          # 确保 android.api 设置为 33
+          sed -i 's/android.api = .*/android.api = 33/' buildozer.spec
 
       - name: Install dependencies
         run: |
@@ -58,7 +72,29 @@ jobs:
           ANDROID_HOME: /opt/android-sdk
           ANDROID_SDK_ROOT: /opt/android-sdk
           ANDROID_NDK_HOME: /opt/android-sdk/ndk/25.2.9519653
+          PATH: /opt/android-sdk/cmdline-tools/latest/bin:/opt/android-sdk/platform-tools:/opt/android-sdk/build-tools/33.0.2:/opt/android-sdk/ndk/25.2.9519653:${{ env.PATH }}
         run: |
+          # 显示环境信息
+          echo "ANDROID_HOME: $ANDROID_HOME"
+          echo "ANDROID_SDK_ROOT: $ANDROID_SDK_ROOT"
+          echo "PATH: $PATH"
+          
+          # 验证 aidl 是否存在
+          if [ -f "/opt/android-sdk/build-tools/33.0.2/aidl" ]; then
+            echo "✓ aidl found!"
+            ls -la /opt/android-sdk/build-tools/33.0.2/aidl
+          else
+            echo "✗ aidl not found!"
+            find /opt/android-sdk -name "aidl" 2>/dev/null || true
+          fi
+          
+          # 确保 buildozer.spec 存在
+          if [ ! -f buildozer.spec ]; then
+            echo "buildozer.spec not found!"
+            exit 1
+          fi
+          
+          # 开始打包
           buildozer -v android debug
 
       - name: Upload APK
