@@ -4,11 +4,12 @@ on:
   push:
     branches:
       - master
+      - main
   workflow_dispatch:
 
 jobs:
   build:
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-20.04
 
     steps:
       - name: Checkout code
@@ -19,6 +20,19 @@ jobs:
         with:
           python-version: '3.8'
 
+      - name: Fix buildozer.spec
+        run: |
+          # 自动修复 android.arch 到 android.archs
+          if [ -f buildozer.spec ]; then
+            sed -i 's/android\.arch =/android.archs =/g' buildozer.spec
+            sed -i 's/android\.arch=/android.archs=/g' buildozer.spec
+            echo "✓ Fixed android.archs in buildozer.spec"
+            cat buildozer.spec | grep "archs"
+          else
+            echo "buildozer.spec not found!"
+            exit 1
+          fi
+
       - name: Install dependencies
         run: |
           python -m pip install --upgrade pip
@@ -26,13 +40,6 @@ jobs:
 
       - name: Build APK with Buildozer
         run: |
-          # 确保 spec 文件存在
-          if [ ! -f buildozer.spec ]; then
-            echo "Error: buildozer.spec not found!"
-            exit 1
-          fi
-          
-          # 打包
           buildozer android debug
 
       - name: Upload APK
