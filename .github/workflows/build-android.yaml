@@ -1,4 +1,4 @@
-name: Build Android APK with Working Docker Image
+name: Build Android APK
 
 on:
   push:
@@ -13,17 +13,16 @@ jobs:
       - name: Checkout code
         uses: actions/checkout@v4
 
-      # 关键修复步骤：使用社区维护的 'tshirtman/buildozer' 镜像
-      - name: Build APK with Buildozer in Docker
+      - name: Build APK with Buildozer (GHCR)
         run: |
           docker run --rm \
-            -v ${{ github.workspace }}:/buildozer \
+            -v ${{ github.workspace }}:/home/user/hostcwd \
             -v ~/.buildozer:/home/user/.buildozer \
-            tshirtman/buildozer \
-            buildozer android debug
+            ghcr.io/kivy/buildozer:latest \
+            android debug
 
       - name: Upload APK
         uses: actions/upload-artifact@v4
         with:
           name: app-debug
-          path: ${{ github.workspace }}/bin/*.apk
+          path: bin/*.apk
