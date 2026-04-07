@@ -23,12 +23,17 @@ jobs:
       - name: Install system dependencies
         run: |
           sudo apt update
+          # 分开安装，libtinfo5 可能不存在，用 libtinfo6 替代或跳过
           sudo apt install -y \
             git zip unzip \
             openjdk-17-jdk \
             autoconf libtool pkg-config \
-            zlib1g-dev libncurses5-dev libncursesw5-dev libtinfo5 \
+            zlib1g-dev libncurses5-dev libncursesw5-dev \
             cmake libffi-dev libssl-dev
+          
+          # libtinfo5 在 Ubuntu 24.04 中已被移除，尝试安装兼容包或跳过
+          # Buildozer 实际上可能不需要这个包
+          echo "System dependencies installed (skipping libtinfo5)"
 
       - name: Install Python dependencies
         run: |
