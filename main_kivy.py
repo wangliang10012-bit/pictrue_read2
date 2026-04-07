@@ -7,8 +7,8 @@ from datetime import datetime
 import os
 
 # 设置窗口大小（移动端尺寸）
-Window.size = (360, 740)
-Window.clearcolor = (0.96, 0.96, 0.96, 1)  # #f5f5f5 背景色
+# Window.size = (360, 740)
+# Window.clearcolor = (0.96, 0.96, 0.96, 1)  # #f5f5f5 背景色
 
 
 class FinanceApp(App):
@@ -28,7 +28,7 @@ class FinanceApp(App):
         # 创建主布局（可滚动）
         from kivy.uix.scrollview import ScrollView
         from kivy.uix.gridlayout import GridLayout
-
+        Window.clearcolor = (0.96, 0.96, 0.96, 1)
         # 创建滚动视图
         scroll_view = ScrollView(size_hint=(1, 1))
 

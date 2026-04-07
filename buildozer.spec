@@ -11,10 +11,12 @@ package.domain = org.create_app
 
 # 源代码目录
 source.dir = .
+# 在它下面添加：
+source.main_entrypoint = main_kivy.py
 
 # 包含的文件类型
 source.include_exts = py,png,jpg,kv,atlas,ttc,jpeg
-
+source.include_patterns = icons/*
 # 应用版本
 version = 1.0.0
 
@@ -35,8 +37,8 @@ android.api = 34
 android.minapi = 21
 android.sdk = 34
 android.ndk_api = 21
-android.ndk = 23b
-android.archs = arm64-v8a, armeabi-v7a
+android.ndk = 25b
+android.archs = arm64-v8a
 
 # 跳过 SDK 更新
 android.skip_update = False
@@ -78,4 +80,4 @@ build_dir = ./.buildozer
 bin_dir = ./bin
 
 # 固定 p4a 版本（解决 aidl 问题）
-p4a.branch = release-2022.12.20
+# p4a.branch = release-2022.12.20
