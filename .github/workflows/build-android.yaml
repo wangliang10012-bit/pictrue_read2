@@ -1,4 +1,4 @@
-name: Build Android APK with Docker
+name: Build Android APK with Fresh Docker Image
 
 on:
   push:
@@ -13,22 +13,28 @@ jobs:
       - name: Checkout code
         uses: actions/checkout@v4
 
-      # 核心步骤：使用 Kivy 官方 Docker 镜像进行构建
-      - name: Build APK with Buildozer in Docker
+      - name: Checkout buildozer source
+        uses: actions/checkout@v4
+        with:
+          repository: kivy/buildozer
+          path: buildozer-src
+
+      - name: Build fresh Docker image from source
         run: |
-          # 运行官方 Docker 镜像
-          # 1. 将当前项目目录挂载到容器内的工作目录
-          # 2. 将宿主机的 ~/.buildozer 目录挂载到容器内，用于缓存 SDK/NDK，加速后续构建
-          # 3. 执行构建命令
+          cd buildozer-src
+          docker build --tag=kivy/buildozer:local .
+
+      - name: Build APK with fresh Docker image
+        run: |
+          # 使用刚刚构建的新镜像，带缓存挂载
           docker run --rm \
             -v ${{ github.workspace }}:/home/user/hostcwd \
             -v ~/.buildozer:/home/user/.buildozer \
-            kivy/buildozer:latest \
+            kivy/buildozer:local \
             android debug
 
       - name: Upload APK
         uses: actions/upload-artifact@v4
         with:
           name: app-debug
-          # 构建好的 APK 文件会出现在项目目录下的 bin 文件夹中
           path: ${{ github.workspace }}/bin/*.apk
