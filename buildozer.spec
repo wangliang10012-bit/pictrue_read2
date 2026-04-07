@@ -76,3 +76,6 @@ build_dir = ./.buildozer
 
 # 输出目录
 bin_dir = ./bin
+
+# 固定 p4a 版本（解决 aidl 问题）
+p4a.branch = release-2022.12.20
