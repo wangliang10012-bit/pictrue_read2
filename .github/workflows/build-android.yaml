@@ -1,4 +1,4 @@
-name: Build Android APK
+name: Build Android APK with Working Docker Image
 
 on:
   push:
@@ -13,26 +13,17 @@ jobs:
       - name: Checkout code
         uses: actions/checkout@v4
 
-      - name: Fix buildozer.spec
+      # 关键修复步骤：使用社区维护的 'tshirtman/buildozer' 镜像
+      - name: Build APK with Buildozer in Docker
         run: |
-          # 自动修复 android.arch 问题
-          if [ -f buildozer.spec ]; then
-            sed -i 's/android\.arch =/android.archs =/g' buildozer.spec
-            sed -i 's/android\.arch=/android.archs=/g' buildozer.spec
-            echo "✓ Fixed android.archs in buildozer.spec"
-          fi
-
-      - name: Build APK with Docker
-        run: |
-          # 使用官方镜像，通过管道自动接受许可证提示
           docker run --rm \
-            -v $(pwd):/home/user/hostcwd \
+            -v ${{ github.workspace }}:/buildozer \
             -v ~/.buildozer:/home/user/.buildozer \
-            kivy/buildozer \
-            bash -c "yes | buildozer android debug"
+            tshirtman/buildozer \
+            buildozer android debug
 
       - name: Upload APK
         uses: actions/upload-artifact@v4
         with:
           name: app-debug
-          path: bin/*.apk
+          path: ${{ github.workspace }}/bin/*.apk
