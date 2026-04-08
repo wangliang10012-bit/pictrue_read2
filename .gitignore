@@ -20,7 +20,11 @@ bin/
 .DS_Store
 Thumbs.db
 
-# 大型资源文件（可选）
+# 忽略根目录下的图片，但保留 icons 文件夹中的所有资源
 *.jpg
 *.png
-!icons/*.png
+!icons/
+!icons/**/*.png
+!icons/**/*.jpg
+!icons/**/*.jpeg
+!icons/**/*.ttc
