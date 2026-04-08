@@ -13,7 +13,7 @@ class FinanceApp:
         self.root.resizable(False, False)
 
         self.images = {}
-        self.icons_dir = os.path.join(os.path.dirname(os.path.abspath(__file__)), 'icons')
+        self.icons_dir = os.path.join(os.path.dirname(os.path.abspath(__file__)), 'icons', 'first_icons')
 
         # 统一的间距设置
         self.padding_x = 12

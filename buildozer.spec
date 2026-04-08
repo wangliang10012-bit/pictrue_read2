@@ -21,7 +21,7 @@ source.include_patterns = icons/*
 version = 1.0.0
 
 # 依赖包
-requirements = python3,kivy==2.2.0,pillow,pyjnius,requests,urllib3,chardet,idna,certifi,hostpython3,setuptools,cython
+requirements = python3,kivy==2.3.0,pillow,pyjnius,requests,urllib3,chardet,idna,certifi,hostpython3,setuptools,cython
 
 # 屏幕方向
 orientation = portrait
@@ -33,12 +33,12 @@ fullscreen = 0
 android.permissions = INTERNET,ACCESS_NETWORK_STATE,WRITE_EXTERNAL_STORAGE,READ_EXTERNAL_STORAGE
 
 # Android API 版本
-android.api = 34
+android.api = 33
 android.minapi = 21
-android.sdk = 34
+android.sdk = 33
 android.ndk_api = 21
 android.ndk = 25b
-android.archs = arm64-v8a
+android.archs = arm64-v8a,armeabi-v7a
 
 # 跳过 SDK 更新
 android.skip_update = False
