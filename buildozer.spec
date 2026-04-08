@@ -16,7 +16,7 @@ source.main_entrypoint = main_kivy.py
 
 # 包含的文件类型
 source.include_exts = py,png,jpg,kv,atlas,ttc,jpeg
-source.include_patterns = icons/*
+source.include_patterns = icons/*,应用图标.png
 # 应用版本
 version = 1.0.0
 
@@ -54,6 +54,9 @@ android.background_color = #f5f5f5
 
 # 包名（完整）
 android.package_name = org.create_app.finance_app
+
+# 应用图标
+icon.filename = 应用图标.png
 
 # 作者
 author = Your Name

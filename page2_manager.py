@@ -3,6 +3,7 @@ from kivy.core.image import Image as CoreImage
 from io import BytesIO
 from datetime import datetime
 import os
+import sys
 
 
 class Page2Manager:
@@ -49,7 +50,6 @@ class Page2Manager:
 
                 # 加载中文字体 - 兼容 Android
                 try:
-                    import sys
                     if sys.platform == 'android':
                         # Android 系统字体路径
                         font_paths = [
@@ -165,112 +165,6 @@ class Page2Manager:
             print(f"创建第二页文字图片失败：{e}")
             import traceback
             traceback.print_exc()
-            return None, None
-
-        """
-        在第二页图片上绘制文字（专用方法）
-
-        text_positions: 列表，每个元素为 (x, y, text, font_size, color, bg_type)
-        """
-        try:
-            img_path = os.path.join(self.second_icons_dir, base_filename)
-            if os.path.exists(img_path):
-                img = Image.open(img_path).convert('RGBA')
-                draw = ImageDraw.Draw(img)
-
-                # 加载中文字体
-                try:
-                    font_path = "C:/Windows/Fonts/msyh.ttc"
-                    font_24 = ImageFont.truetype(font_path, 24)
-                    font_16 = ImageFont.truetype(font_path, 16)
-                    font_14 = ImageFont.truetype(font_path, 14)
-                    font_12 = ImageFont.truetype(font_path, 12)
-                except:
-                    font_24 = ImageFont.load_default()
-                    font_16 = font_24
-                    font_14 = font_24
-                    font_12 = font_24
-
-                # 加载覆盖底色图片
-                bg_cover_path = os.path.join(self.second_icons_dir, '下期还款日期及还款金额覆盖底色.png')
-                bg_cover_img = None
-                if os.path.exists(bg_cover_path):
-                    bg_cover_img = Image.open(bg_cover_path).convert('RGBA')
-
-                # 绘制每个文字
-                for item in text_positions:
-                    x, y, text, font_size, color, bg_type = item
-
-                    # 选择字体
-                    if font_size == 24:
-                        use_font = font_24
-                    elif font_size == 16:
-                        use_font = font_16
-                    elif font_size == 14:
-                        use_font = font_14
-                    else:
-                        use_font = font_12
-
-                    # 固定的覆盖区域坐标
-                    if bg_type == 'principal':
-                        # 本金金额覆盖区域
-                        cover_x = 97
-                        cover_y = 116
-                        cover_width = 130
-                        cover_height = 25
-                        text_x = 97
-                        text_y = 116
-                    elif bg_type == 'repayment_amount':
-                        # 下期还款金额覆盖区域
-                        cover_x = 122
-                        cover_y = 148
-                        cover_width = 100
-                        cover_height = 25
-                        text_x = 122
-                        text_y = 149
-                    elif bg_type == 'repayment_date':
-                        # 下期还款日覆盖区域（红色字体）
-                        cover_x = 305
-                        cover_y = 150
-                        cover_width = 95
-                        cover_height = 20
-                        text_x = 305
-                        text_y = 150
-                    else:
-                        # 默认白色背景
-                        cover_x = x - 10
-                        cover_y = y - 5
-                        cover_width = 120
-                        cover_height = 25
-                        text_x = x
-                        text_y = y
-
-                    # 绘制背景覆盖
-                    if bg_type in ['repayment_amount', 'repayment_date'] and bg_cover_img:
-                        # 使用背景图片覆盖
-                        bg_cover_resized = bg_cover_img.resize((cover_width, cover_height), Image.LANCZOS)
-                        img.paste(bg_cover_resized, (cover_x, cover_y), bg_cover_resized)
-                    else:
-                        # 白色背景覆盖
-                        draw.rectangle(
-                            [cover_x, cover_y, cover_x + cover_width, cover_y + cover_height],
-                            fill='#ffffff'
-                        )
-
-                    # 绘制新文字
-                    draw.text((text_x, text_y), text, fill=color, font=use_font)
-
-                # 将 PIL Image 转换为 Kivy Image
-                img_byte_arr = BytesIO()
-                img.save(img_byte_arr, format='PNG')
-                img_byte_arr.seek(0)
-                core_image = CoreImage(BytesIO(img_byte_arr.read()), ext='png')
-
-                return core_image, img.size
-            else:
-                return None, None
-        except Exception as e:
-            print(f"创建第二页文字图片失败：{e}")
             return None, None
 
     def create_housing_loan_card(self):

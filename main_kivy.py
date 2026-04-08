@@ -11,11 +11,15 @@ from kivy.core.image import Image as CoreImage
 from io import BytesIO
 from datetime import datetime
 import os
+import sys
+import traceback
 from page2_manager import Page2Manager
 from page3_manager import ThirdPageScreen
 
-# 设置窗口大小（移动端尺寸）
-Window.size = (360, 740)
+# 不在 Android 上设置固定窗口大小
+if sys.platform != 'android':
+    Window.size = (360, 740)
+
 Window.clearcolor = (0.96, 0.96, 0.96, 1)
 
 
@@ -26,6 +30,7 @@ class ImageButton(ButtonBehavior, KivyImage):
 
 class FirstPageScreen(Screen):
     """第一页"""
+
     def __init__(self, app_instance, **kwargs):
         super().__init__(**kwargs)
         self.app_instance = app_instance
@@ -33,7 +38,7 @@ class FirstPageScreen(Screen):
     def build_ui(self):
         from kivy.uix.scrollview import ScrollView
         from kivy.uix.gridlayout import GridLayout
-        
+
         scroll_view = ScrollView(size_hint=(1, 1))
         content_layout = GridLayout(cols=1, size_hint_y=None, padding=12, spacing=4)
         content_layout.bind(minimum_height=content_layout.setter('height'))
@@ -51,80 +56,85 @@ class FirstPageScreen(Screen):
 
 class SecondPageScreen(Screen):
     """第二页"""
+
     def __init__(self, app_instance, **kwargs):
         super().__init__(**kwargs)
         self.app_instance = app_instance
         self.page2_manager = Page2Manager(app_instance.second_icons_dir)
-    
+
     def build_ui(self):
         from kivy.uix.scrollview import ScrollView
-        
+
         scroll_view = ScrollView(size_hint=(1, 1), do_scroll_x=False)
         main_layout = BoxLayout(orientation='vertical', size_hint_y=None, spacing=1, padding=(0, 0, 0, 0))
         main_layout.bind(minimum_height=main_layout.setter('height'))
-        
+
         # 第一张：贷款金额图片（置顶，可点击）
         loan_amount_img_path = os.path.join(self.app_instance.second_icons_dir, '贷款金额.png')
-        
+
         if os.path.exists(loan_amount_img_path):
             from PIL import Image as PILImage
-            pil_img = PILImage.open(loan_amount_img_path)
-            img_width, img_height = pil_img.size
-            scaled_height = int(img_height * (360 / img_width))
-            
-            # 创建可点击的容器
-            loan_layout = BoxLayout(size_hint_y=None, height=scaled_height)
-            loan_widget = ImageButton(source=loan_amount_img_path, size_hint=(1, 1), allow_stretch=True, keep_ratio=False)
-            
-            # 绑定 on_touch_down 事件来获取点击位置
-            loan_widget.bind(on_touch_down=self.on_loan_image_click)
-            
-            loan_layout.add_widget(loan_widget)
-            main_layout.add_widget(loan_layout)
-        
+            try:
+                pil_img = PILImage.open(loan_amount_img_path)
+                img_width, img_height = pil_img.size
+                scaled_height = int(img_height * (360 / img_width))
+
+                # 创建可点击的容器
+                loan_layout = BoxLayout(size_hint_y=None, height=scaled_height)
+                loan_widget = ImageButton(source=loan_amount_img_path, size_hint=(1, 1), allow_stretch=True,
+                                          keep_ratio=False)
+
+                # 绑定 on_touch_down 事件来获取点击位置
+                loan_widget.bind(on_touch_down=self.on_loan_image_click)
+
+                loan_layout.add_widget(loan_widget)
+                main_layout.add_widget(loan_layout)
+            except Exception as e:
+                print(f"加载贷款金额图片失败: {e}")
+
         # 第二张：我的住房贷款图片
         housing_loan_layout = self.create_housing_loan_card()
         main_layout.add_widget(housing_loan_layout)
-        
+
         scroll_view.add_widget(main_layout)
         return scroll_view
-    
+
     def on_loan_image_click(self, instance, touch):
         """处理贷款金额图片的点击事件"""
         # 检查触摸是否在组件内
         if not instance.collide_point(*touch.pos):
             return False
-        
+
         # 获取图片尺寸
         img_width = instance.width
         img_height = instance.height
-        
+
         # 获取点击位置（相对于图片）
         touch_x = touch.x - instance.x
         touch_y = touch.y - instance.y
-        
+
         print(f"点击图片位置：({touch_x:.1f}, {touch_y:.1f}), 图片尺寸：{img_width}x{img_height}")
-        
+
         # 判断点击区域
         # "<" 返回按钮：左上角区域 (x < 60, y > img_height - 80)
         if touch_x < 60 and touch_y > img_height - 80:
             print("点击了返回按钮，跳回第一页")
             self.app_instance.sm.current = 'first_page'
             return True
-        
+
         # "还款计划" 图标：根据实际点击位置调整 (x > 300, y < 200)
         # 用户反馈的点击位置：(331, 158)
         if touch_x > 300 and touch_y < 200:
             print("点击了还款计划，跳转到第三页")
             self.app_instance.sm.current = 'third_page'
             return True
-        
+
         return False
-    
+
     def create_housing_loan_card(self):
         """创建住房贷款卡片"""
         core_image, size = self.page2_manager.create_housing_loan_card()
-        
+
         if core_image:
             img_width, img_height = size
             container = BoxLayout(size_hint_y=None, height=img_height)
@@ -138,6 +148,7 @@ class SecondPageScreen(Screen):
 class FinanceApp(App):
     def __init__(self, **kwargs):
         super().__init__(**kwargs)
+
         # 可配置的数据
         self.total_assets = "0"  # 总资产
         self.total_liabilities = "512,922.29"  # 总负债
@@ -146,34 +157,50 @@ class FinanceApp(App):
         self.last_login_time = datetime.now().strftime("%Y-%m-%d %H:%M:%S")  # 上次登录时间（动态获取当前时间）
 
         # 获取图标目录
-        self.icons_dir = os.path.join(os.path.dirname(os.path.abspath(__file__)), 'icons', 'first_icons')
-        self.second_icons_dir = os.path.join(os.path.dirname(os.path.abspath(__file__)), 'icons', 'second_icons')
-        self.third_icons_dir = os.path.join(os.path.dirname(os.path.abspath(__file__)), 'icons', 'third_icons')
+        base_dir = os.path.dirname(os.path.abspath(__file__))
+        self.icons_dir = os.path.join(base_dir, 'icons', 'first_icons')
+        self.second_icons_dir = os.path.join(base_dir, 'icons', 'second_icons')
+        self.third_icons_dir = os.path.join(base_dir, 'icons', 'third_icons')
 
     def build(self):
-        # 创建屏幕管理器（使用 NoTransition 去掉切换动画）
-        self.sm = ScreenManager(transition=NoTransition())
-        
-        # 第一页
-        self.first_page = FirstPageScreen(app_instance=self, name='first_page')
-        self.first_page.add_widget(self.first_page.build_ui())
-        self.sm.add_widget(self.first_page)
-        
-        # 第二页
-        self.second_page = SecondPageScreen(app_instance=self, name='second_page')
-        self.second_page.add_widget(self.second_page.build_ui())
-        self.sm.add_widget(self.second_page)
-        
-        # 第三页
-        self.third_page = ThirdPageScreen(app_instance=self, name='third_page')
-        self.third_page.add_widget(self.third_page.build_ui())
-        self.sm.add_widget(self.third_page)
-        
-        # 定时更新时间（每秒更新一次）
-        Clock.schedule_interval(self.update_time, 1)
+        try:
+            # 创建屏幕管理器（使用 NoTransition 去掉切换动画）
+            self.sm = ScreenManager(transition=NoTransition())
 
-        return self.sm
-    
+            # 第一页
+            self.first_page = FirstPageScreen(app_instance=self, name='first_page')
+            self.first_page.add_widget(self.first_page.build_ui())
+            self.sm.add_widget(self.first_page)
+
+            # 第二页
+            self.second_page = SecondPageScreen(app_instance=self, name='second_page')
+            self.second_page.add_widget(self.second_page.build_ui())
+            self.sm.add_widget(self.second_page)
+
+            # 第三页
+            self.third_page = ThirdPageScreen(app_instance=self, name='third_page')
+            self.third_page.add_widget(self.third_page.build_ui())
+            self.sm.add_widget(self.third_page)
+
+            # 定时更新时间（每秒更新一次）
+            Clock.schedule_interval(self.update_time, 1)
+
+            return self.sm
+
+        except Exception as e:
+            error_msg = f"应用启动失败\n\n错误: {str(e)}\n\n请检查日志"
+            print(error_msg)
+            traceback.print_exc()
+
+            # 返回一个简单的错误提示界面
+            error_layout = BoxLayout(orientation='vertical')
+            error_layout.add_widget(Label(
+                text=error_msg,
+                font_size='14sp',
+                halign='center'
+            ))
+            return error_layout
+
     def update_time(self, dt):
         """每秒更新当前时间"""
         self.current_time = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
@@ -185,7 +212,7 @@ class FinanceApp(App):
     def create_text_image(self, base_filename, text_positions):
         """
         在第一页图片上绘制文字（专用方法）
-        
+
         text_positions: 列表，每个元素为 (x, y, text, font_size, color, bg_type)
         """
         try:
@@ -196,7 +223,6 @@ class FinanceApp(App):
 
                 # 加载中文字体 - 兼容 Android
                 try:
-                    import sys
                     if sys.platform == 'android':
                         # Android 系统字体路径
                         font_paths = [
@@ -321,13 +347,12 @@ class FinanceApp(App):
                 img.save(img_byte_arr, format='PNG')
                 img_byte_arr.seek(0)
                 core_image = CoreImage(BytesIO(img_byte_arr.read()), ext='png')
-                
+
                 return core_image, img.size
             else:
                 return None, None
         except Exception as e:
             print(f"创建文字图片失败：{e}")
-            import traceback
             traceback.print_exc()
             return None, None
 
@@ -378,16 +403,16 @@ class FinanceApp(App):
         if core_image:
             img_width, img_height = size
             container = BoxLayout(size_hint_y=None, height=img_height)
-            
+
             img_widget = ImageButton(
-                texture=core_image.texture, 
-                size_hint=(1, 1), 
-                allow_stretch=True, 
+                texture=core_image.texture,
+                size_hint=(1, 1),
+                allow_stretch=True,
                 keep_ratio=True
             )
-            
+
             img_widget.bind(on_press=self.on_assets_click)
-            
+
             container.add_widget(img_widget)
             return container
         else:

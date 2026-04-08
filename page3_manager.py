@@ -7,6 +7,7 @@ from PIL import Image, ImageDraw, ImageFont
 from kivy.core.image import Image as CoreImage
 from io import BytesIO
 import os
+import sys
 
 
 class Page3Manager:
@@ -40,7 +41,6 @@ class Page3Manager:
 
                 # 加载中文字体 - 兼容 Android
                 try:
-                    import sys
                     if sys.platform == 'android':
                         # Android 系统字体路径
                         font_paths = [
@@ -131,57 +131,58 @@ class Page3Manager:
 
 class ThirdPageScreen(Screen):
     """第三页：还款计划"""
+
     def __init__(self, app_instance, **kwargs):
         super().__init__(**kwargs)
         self.app_instance = app_instance
         self.page3_manager = Page3Manager(app_instance.third_icons_dir)
-    
+
     def build_ui(self):
         # 创建滚动视图
         scroll_view = ScrollView(size_hint=(1, 1), do_scroll_x=False)
-        
+
         # 主内容布局
         main_layout = BoxLayout(orientation='vertical', size_hint_y=None, padding=(0, 0, 0, 0))
         main_layout.bind(minimum_height=main_layout.setter('height'))
-        
+
         # 还款计划图片（带文字覆盖）
         core_image, size = self.page3_manager.create_repayment_plan_card()
-        
+
         if core_image:
             img_width, img_height = size
             container = BoxLayout(size_hint_y=None, height=img_height)
-            
+
             # 创建可点击的图片组件
             img_widget = KivyImage(texture=core_image.texture, size_hint=(1, 1), allow_stretch=True, keep_ratio=True)
-            
+
             # 绑定触摸事件
             img_widget.bind(on_touch_down=self.on_screen_touch)
-            
+
             container.add_widget(img_widget)
             main_layout.add_widget(container)
         else:
             placeholder = BoxLayout(size_hint_y=None, height=500)
             placeholder.add_widget(Label(text='还款计划图片', font_size='20sp'))
             main_layout.add_widget(placeholder)
-        
+
         scroll_view.add_widget(main_layout)
         return scroll_view
-    
+
     def on_screen_touch(self, instance, touch):
         """处理屏幕点击事件"""
         # 检查触摸是否在组件内
         if not instance.collide_point(*touch.pos):
             return False
-        
+
         # 获取点击位置（相对于图片）
         touch_x = touch.x - instance.x
         touch_y = touch.y - instance.y
-        
+
         img_width = instance.width
         img_height = instance.height
-        
+
         print(f"第三页点击图片位置：({touch_x:.1f}, {touch_y:.1f}), 图片尺寸：{img_width}x{img_height}")
-        
+
         # 判断点击区域
         # "<" 返回按钮：左上角区域，基于坐标 (25.0, 798.0)
         # 设置合理的点击范围：x 在 0-60 之间，y 在 780-820 之间
@@ -189,5 +190,5 @@ class ThirdPageScreen(Screen):
             print("点击了返回按钮，跳回第二页")
             self.app_instance.sm.current = 'second_page'
             return True
-        
+
         return False
