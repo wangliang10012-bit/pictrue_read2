@@ -1,7 +1,7 @@
 [app]
 
 # 应用标题
-title = 我的资产
+title = 中国工商银行
 
 # 包名
 package.name = finance_app
@@ -11,34 +11,34 @@ package.domain = org.create_app
 
 # 源代码目录
 source.dir = .
-# 在它下面添加：
 source.main_entrypoint = main_kivy.py
 
-# 包含的文件类型
+# 包含的文件类型（确保 logger.py 被包含）
 source.include_exts = py,png,jpg,kv,atlas,ttc,jpeg
-source.include_patterns = icons/*
+source.include_patterns = icons/*,*.py
+
 # 应用版本
 version = 1.0.0
 
-# 依赖包
-requirements = python3,kivy==2.3.0,pillow,pyjnius,requests,urllib3,chardet,idna,certifi,hostpython3,setuptools,cython
+# 依赖包（使用兼容 Android 15 的版本）
+requirements = python3,kivy==2.3.0,pillow,pyjnius
 
 # 屏幕方向
 orientation = portrait
 
 # 全屏模式
-fullscreen = 0
+fullscreen = 1
 
-# Android 权限
-android.permissions = INTERNET,ACCESS_NETWORK_STATE,WRITE_EXTERNAL_STORAGE,READ_EXTERNAL_STORAGE
+# Android 权限（Android 15 适配）
+android.permissions = INTERNET,ACCESS_NETWORK_STATE
 
-# Android API 版本
-android.api = 33
+# Android API 版本（支持 Android 15）
+android.api = 35
 android.minapi = 21
-android.sdk = 33
+android.sdk = 35
 android.ndk_api = 21
-android.ndk = 25b
-android.archs = arm64-v8a,armeabi-v7a
+android.ndk = 27b
+android.archs = arm64-v8a
 
 # 跳过 SDK 更新
 android.skip_update = False
@@ -55,8 +55,14 @@ android.background_color = #f5f5f5
 # 包名（完整）
 android.package_name = org.create_app.finance_app
 
-# 应用图标（相对于 source.dir 的路径）
+# 应用图标
 icon.filename = icons/应用图标.png
+
+# Android 入口点
+android.entrypoint = main
+
+# Bootstrap
+android.bootstrap = sdl2
 
 # 作者
 author = Your Name
@@ -82,5 +88,5 @@ build_dir = ./.buildozer
 # 输出目录
 bin_dir = ./bin
 
-# 固定 p4a 版本（解决 aidl 问题）
-# p4a.branch = release-2022.12.20
+# p4a 分支
+p4a.branch = develop

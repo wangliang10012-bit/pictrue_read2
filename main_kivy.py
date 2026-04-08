@@ -1,3 +1,25 @@
+import os
+import sys
+
+# 最先导入日志模块（在任何 Kivy 导入之前）
+from logger import logger
+
+# 立即初始化日志
+logger.setup()
+logger.log("===== 应用开始加载 =====")
+logger.log(f"Python 版本: {sys.version}")
+logger.log(f"平台: {sys.platform}")
+logger.log(f"工作目录: {os.getcwd()}")
+
+# 在导入 Kivy 之前设置环境变量
+if sys.platform == 'android':
+    logger.log("检测到 Android 平台")
+    os.environ['KIVY_WINDOW'] = 'sdl2'
+    os.environ['KIVY_METRICS_DENSITY'] = '1'
+else:
+    logger.log("非 Android 平台")
+
+# 现在导入 Kivy
 from kivy.app import App
 from kivy.uix.boxlayout import BoxLayout
 from kivy.uix.image import Image as KivyImage
@@ -10,18 +32,26 @@ from PIL import Image, ImageDraw, ImageFont
 from kivy.core.image import Image as CoreImage
 from io import BytesIO
 from datetime import datetime
-import os
-import sys
 import traceback
-from page2_manager import Page2Manager
-from page3_manager import ThirdPageScreen
-from logger import logger
 
-# 不在 Android 上设置固定窗口大小
+logger.log("Kivy 模块导入成功")
+
+# 不在 Android 上设置固定窗口大小（这可能导致闪退）
 if sys.platform != 'android':
     Window.size = (360, 740)
+    logger.log(f"设置窗口大小: {Window.size}")
+else:
+    logger.log("Android 平台，不设置固定窗口大小")
+    # Android 上使用默认窗口配置
+    Window.clearcolor = (0.96, 0.96, 0.96, 1)
 
 Window.clearcolor = (0.96, 0.96, 0.96, 1)
+logger.log("窗口配置完成")
+
+from page2_manager import Page2Manager
+from page3_manager import ThirdPageScreen
+
+logger.log("所有自定义模块导入成功")
 
 
 class ImageButton(ButtonBehavior, KivyImage):
@@ -35,24 +65,31 @@ class FirstPageScreen(Screen):
     def __init__(self, app_instance, **kwargs):
         super().__init__(**kwargs)
         self.app_instance = app_instance
+        logger.log("FirstPageScreen 初始化")
 
     def build_ui(self):
-        from kivy.uix.scrollview import ScrollView
-        from kivy.uix.gridlayout import GridLayout
+        try:
+            logger.log("开始构建第一页 UI")
+            from kivy.uix.scrollview import ScrollView
+            from kivy.uix.gridlayout import GridLayout
 
-        scroll_view = ScrollView(size_hint=(1, 1))
-        content_layout = GridLayout(cols=1, size_hint_y=None, padding=12, spacing=4)
-        content_layout.bind(minimum_height=content_layout.setter('height'))
+            scroll_view = ScrollView(size_hint=(1, 1))
+            content_layout = GridLayout(cols=1, size_hint_y=None, padding=12, spacing=4)
+            content_layout.bind(minimum_height=content_layout.setter('height'))
 
-        content_layout.add_widget(self.app_instance.create_status_bar())
-        content_layout.add_widget(self.app_instance.create_user_card())
-        content_layout.add_widget(self.app_instance.create_menu())
-        content_layout.add_widget(self.app_instance.create_assets_card())
-        content_layout.add_widget(self.app_instance.create_income_card())
-        content_layout.add_widget(self.app_instance.create_bottom_nav())
+            content_layout.add_widget(self.app_instance.create_status_bar())
+            content_layout.add_widget(self.app_instance.create_user_card())
+            content_layout.add_widget(self.app_instance.create_menu())
+            content_layout.add_widget(self.app_instance.create_assets_card())
+            content_layout.add_widget(self.app_instance.create_income_card())
+            content_layout.add_widget(self.app_instance.create_bottom_nav())
 
-        scroll_view.add_widget(content_layout)
-        return scroll_view
+            scroll_view.add_widget(content_layout)
+            logger.log("第一页 UI 构建成功")
+            return scroll_view
+        except Exception as e:
+            logger.log_error("第一页 UI 构建失败", e)
+            raise
 
 
 class SecondPageScreen(Screen):
@@ -61,42 +98,62 @@ class SecondPageScreen(Screen):
     def __init__(self, app_instance, **kwargs):
         super().__init__(**kwargs)
         self.app_instance = app_instance
-        self.page2_manager = Page2Manager(app_instance.second_icons_dir)
+        logger.log("SecondPageScreen 初始化")
+        try:
+            self.page2_manager = Page2Manager(app_instance.second_icons_dir)
+            logger.log("Page2Manager 初始化成功")
+        except Exception as e:
+            logger.log_error("Page2Manager 初始化失败", e)
+            raise
 
     def build_ui(self):
-        from kivy.uix.scrollview import ScrollView
+        try:
+            logger.log("开始构建第二页 UI")
+            from kivy.uix.scrollview import ScrollView
 
-        scroll_view = ScrollView(size_hint=(1, 1), do_scroll_x=False)
-        main_layout = BoxLayout(orientation='vertical', size_hint_y=None, spacing=1, padding=(0, 0, 0, 0))
-        main_layout.bind(minimum_height=main_layout.setter('height'))
+            scroll_view = ScrollView(size_hint=(1, 1), do_scroll_x=False)
+            main_layout = BoxLayout(orientation='vertical', size_hint_y=None, spacing=1, padding=(0, 0, 0, 0))
+            main_layout.bind(minimum_height=main_layout.setter('height'))
 
-        # 第一张：贷款金额图片（置顶，可点击）
-        loan_amount_img_path = os.path.join(self.app_instance.second_icons_dir, '贷款金额.png')
+            # 第一张：贷款金额图片（置顶，可点击）
+            loan_amount_img_path = os.path.join(self.app_instance.second_icons_dir, '贷款金额.png')
+            logger.log(f"检查贷款金额图片: {loan_amount_img_path}")
 
-        if os.path.exists(loan_amount_img_path):
-            from PIL import Image as PILImage
-            try:
-                pil_img = PILImage.open(loan_amount_img_path)
-                img_width, img_height = pil_img.size
-                scaled_height = int(img_height * (360 / img_width))
+            if os.path.exists(loan_amount_img_path):
+                logger.log("贷款金额图片存在")
+                from PIL import Image as PILImage
+                try:
+                    pil_img = PILImage.open(loan_amount_img_path)
+                    img_width, img_height = pil_img.size
+                    scaled_height = int(img_height * (360 / img_width))
+                    logger.log(f"贷款金额图片尺寸: {img_width}x{img_height}, 缩放后高度: {scaled_height}")
 
-                loan_layout = BoxLayout(size_hint_y=None, height=scaled_height)
-                loan_widget = ImageButton(source=loan_amount_img_path, size_hint=(1, 1), allow_stretch=True,
-                                          keep_ratio=False)
+                    loan_layout = BoxLayout(size_hint_y=None, height=scaled_height)
+                    loan_widget = ImageButton(source=loan_amount_img_path, size_hint=(1, 1), allow_stretch=True,
+                                              keep_ratio=False)
 
-                loan_widget.bind(on_touch_down=self.on_loan_image_click)
+                    loan_widget.bind(on_touch_down=self.on_loan_image_click)
 
-                loan_layout.add_widget(loan_widget)
-                main_layout.add_widget(loan_layout)
-            except Exception as e:
-                logger.log_error(f"加载贷款金额图片失败", e)
+                    loan_layout.add_widget(loan_widget)
+                    main_layout.add_widget(loan_layout)
+                    logger.log("贷款金额图片组件添加成功")
+                except Exception as e:
+                    logger.log_error(f"加载贷款金额图片失败", e)
+            else:
+                logger.log("贷款金额图片不存在", "WARNING")
 
-        # 第二张：我的住房贷款图片
-        housing_loan_layout = self.create_housing_loan_card()
-        main_layout.add_widget(housing_loan_layout)
+            # 第二张：我的住房贷款图片
+            logger.log("开始创建住房贷款卡片")
+            housing_loan_layout = self.create_housing_loan_card()
+            main_layout.add_widget(housing_loan_layout)
+            logger.log("住房贷款卡片添加成功")
 
-        scroll_view.add_widget(main_layout)
-        return scroll_view
+            scroll_view.add_widget(main_layout)
+            logger.log("第二页 UI 构建成功")
+            return scroll_view
+        except Exception as e:
+            logger.log_error("第二页 UI 构建失败", e)
+            raise
 
     def on_loan_image_click(self, instance, touch):
         """处理贷款金额图片的点击事件"""
@@ -125,24 +182,30 @@ class SecondPageScreen(Screen):
 
     def create_housing_loan_card(self):
         """创建住房贷款卡片"""
-        core_image, size = self.page2_manager.create_housing_loan_card()
+        try:
+            logger.log("调用 Page2Manager.create_housing_loan_card")
+            core_image, size = self.page2_manager.create_housing_loan_card()
 
-        if core_image:
-            img_width, img_height = size
-            container = BoxLayout(size_hint_y=None, height=img_height)
-            img_widget = KivyImage(texture=core_image.texture, size_hint=(1, 1), allow_stretch=True, keep_ratio=True)
-            container.add_widget(img_widget)
-            return container
-        else:
+            if core_image:
+                img_width, img_height = size
+                logger.log(f"住房贷款卡片图片创建成功: {img_width}x{img_height}")
+                container = BoxLayout(size_hint_y=None, height=img_height)
+                img_widget = KivyImage(texture=core_image.texture, size_hint=(1, 1), allow_stretch=True, keep_ratio=True)
+                container.add_widget(img_widget)
+                return container
+            else:
+                logger.log("住房贷款卡片图片创建失败，使用占位符", "WARNING")
+                return BoxLayout(size_hint_y=None, height=300)
+        except Exception as e:
+            logger.log_error("create_housing_loan_card 异常", e)
             return BoxLayout(size_hint_y=None, height=300)
 
 
 class FinanceApp(App):
     def __init__(self, **kwargs):
         super().__init__(**kwargs)
-
-        logger.setup()
-        logger.log("应用初始化开始")
+        
+        logger.log("FinanceApp 初始化开始")
 
         self.total_assets = "0"
         self.total_liabilities = "512,922.29"
@@ -154,12 +217,12 @@ class FinanceApp(App):
         self.icons_dir = os.path.join(base_dir, 'icons', 'first_icons')
         self.second_icons_dir = os.path.join(base_dir, 'icons', 'second_icons')
         self.third_icons_dir = os.path.join(base_dir, 'icons', 'third_icons')
-
+        
         logger.log(f"基础目录: {base_dir}")
         logger.log(f"icons 目录: {self.icons_dir}")
         logger.log(f"second_icons 目录: {self.second_icons_dir}")
         logger.log(f"third_icons 目录: {self.third_icons_dir}")
-
+        
         for dir_name, dir_path in [
             ('icons', self.icons_dir),
             ('second_icons', self.second_icons_dir),
@@ -167,45 +230,49 @@ class FinanceApp(App):
         ]:
             if os.path.exists(dir_path):
                 files = os.listdir(dir_path)
-                logger.log(f"{dir_name} 目录存在，包含 {len(files)} 个文件")
+                logger.log(f"{dir_name} 目录存在，包含 {len(files)} 个文件: {files[:3]}...")
             else:
                 logger.log(f"警告: {dir_name} 目录不存在: {dir_path}", "WARNING")
+        
+        logger.log("FinanceApp 初始化完成")
 
     def build(self):
         try:
-            logger.log("开始构建 UI")
-
+            logger.log("========== 开始构建 UI ==========")
+            
             self.sm = ScreenManager(transition=NoTransition())
+            logger.log("ScreenManager 创建成功")
 
             logger.log("创建第一页")
             self.first_page = FirstPageScreen(app_instance=self, name='first_page')
             self.first_page.add_widget(self.first_page.build_ui())
             self.sm.add_widget(self.first_page)
-            logger.log("第一页创建成功")
+            logger.log("✓ 第一页添加成功")
 
             logger.log("创建第二页")
             self.second_page = SecondPageScreen(app_instance=self, name='second_page')
             self.second_page.add_widget(self.second_page.build_ui())
             self.sm.add_widget(self.second_page)
-            logger.log("第二页创建成功")
+            logger.log("✓ 第二页添加成功")
 
             logger.log("创建第三页")
             self.third_page = ThirdPageScreen(app_instance=self, name='third_page')
             self.third_page.add_widget(self.third_page.build_ui())
             self.sm.add_widget(self.third_page)
-            logger.log("第三页创建成功")
+            logger.log("✓ 第三页添加成功")
 
             Clock.schedule_interval(self.update_time, 1)
-
-            logger.log("UI 构建完成")
+            logger.log("定时器设置成功")
+            
+            logger.log("========== UI 构建完成 ==========")
             return self.sm
 
         except Exception as e:
             logger.log_error("UI 构建失败", e)
-
+            
             error_layout = BoxLayout(orientation='vertical')
             error_layout.add_widget(Label(
-                text=f"应用启动失败\n\n错误: {str(e)}\n\n日志已保存到:\n/storage/emulated/0/finance_app_logs/",
+                text=f"应用启动失败\n\n错误: {str(e)}\n\n请查看日志文件",
                 font_size='14sp',
                 halign='center'
             ))
@@ -223,8 +290,6 @@ class FinanceApp(App):
     def create_text_image(self, base_filename, text_positions):
         """
         在第一页图片上绘制文字（专用方法）
-
-        text_positions: 列表，每个元素为 (x, y, text, font_size, color, bg_type)
         """
         try:
             img_path = os.path.join(self.icons_dir, base_filename)
@@ -453,10 +518,15 @@ class FinanceApp(App):
 
 if __name__ == '__main__':
     try:
-        logger.log("应用启动")
+        logger.log("========================================")
+        logger.log("应用主入口启动")
+        logger.log("========================================")
         app = FinanceApp()
-        logger.log("开始运行应用")
+        logger.log("FinanceApp 实例创建成功，开始运行")
         app.run()
     except Exception as e:
         logger.log_error("应用运行异常", e)
+        # 即使崩溃也要确保日志被写入
+        import time
+        time.sleep(2)  # 等待日志写入
         raise
