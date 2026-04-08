@@ -15,6 +15,7 @@ import sys
 import traceback
 from page2_manager import Page2Manager
 from page3_manager import ThirdPageScreen
+from logger import logger
 
 # 不在 Android 上设置固定窗口大小
 if sys.platform != 'android':
@@ -79,18 +80,16 @@ class SecondPageScreen(Screen):
                 img_width, img_height = pil_img.size
                 scaled_height = int(img_height * (360 / img_width))
 
-                # 创建可点击的容器
                 loan_layout = BoxLayout(size_hint_y=None, height=scaled_height)
                 loan_widget = ImageButton(source=loan_amount_img_path, size_hint=(1, 1), allow_stretch=True,
                                           keep_ratio=False)
 
-                # 绑定 on_touch_down 事件来获取点击位置
                 loan_widget.bind(on_touch_down=self.on_loan_image_click)
 
                 loan_layout.add_widget(loan_widget)
                 main_layout.add_widget(loan_layout)
             except Exception as e:
-                print(f"加载贷款金额图片失败: {e}")
+                logger.log_error(f"加载贷款金额图片失败", e)
 
         # 第二张：我的住房贷款图片
         housing_loan_layout = self.create_housing_loan_card()
@@ -101,31 +100,24 @@ class SecondPageScreen(Screen):
 
     def on_loan_image_click(self, instance, touch):
         """处理贷款金额图片的点击事件"""
-        # 检查触摸是否在组件内
         if not instance.collide_point(*touch.pos):
             return False
 
-        # 获取图片尺寸
         img_width = instance.width
         img_height = instance.height
 
-        # 获取点击位置（相对于图片）
         touch_x = touch.x - instance.x
         touch_y = touch.y - instance.y
 
-        print(f"点击图片位置：({touch_x:.1f}, {touch_y:.1f}), 图片尺寸：{img_width}x{img_height}")
+        logger.log(f"点击图片位置：({touch_x:.1f}, {touch_y:.1f}), 图片尺寸：{img_width}x{img_height}")
 
-        # 判断点击区域
-        # "<" 返回按钮：左上角区域 (x < 60, y > img_height - 80)
         if touch_x < 60 and touch_y > img_height - 80:
-            print("点击了返回按钮，跳回第一页")
+            logger.log("点击了返回按钮，跳回第一页")
             self.app_instance.sm.current = 'first_page'
             return True
 
-        # "还款计划" 图标：根据实际点击位置调整 (x > 300, y < 200)
-        # 用户反馈的点击位置：(331, 158)
         if touch_x > 300 and touch_y < 200:
-            print("点击了还款计划，跳转到第三页")
+            logger.log("点击了还款计划，跳转到第三页")
             self.app_instance.sm.current = 'third_page'
             return True
 
@@ -149,53 +141,71 @@ class FinanceApp(App):
     def __init__(self, **kwargs):
         super().__init__(**kwargs)
 
-        # 可配置的数据
-        self.total_assets = "0"  # 总资产
-        self.total_liabilities = "512,922.29"  # 总负债
-        self.loan_amount = "512,922.29"  # 贷款金额（贷款进度区域）
-        self.current_time = datetime.now().strftime("%Y-%m-%d %H:%M:%S")  # 时间（动态获取当前时间）
-        self.last_login_time = datetime.now().strftime("%Y-%m-%d %H:%M:%S")  # 上次登录时间（动态获取当前时间）
+        logger.setup()
+        logger.log("应用初始化开始")
 
-        # 获取图标目录
+        self.total_assets = "0"
+        self.total_liabilities = "512,922.29"
+        self.loan_amount = "512,922.29"
+        self.current_time = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
+        self.last_login_time = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
+
         base_dir = os.path.dirname(os.path.abspath(__file__))
         self.icons_dir = os.path.join(base_dir, 'icons', 'first_icons')
         self.second_icons_dir = os.path.join(base_dir, 'icons', 'second_icons')
         self.third_icons_dir = os.path.join(base_dir, 'icons', 'third_icons')
 
+        logger.log(f"基础目录: {base_dir}")
+        logger.log(f"icons 目录: {self.icons_dir}")
+        logger.log(f"second_icons 目录: {self.second_icons_dir}")
+        logger.log(f"third_icons 目录: {self.third_icons_dir}")
+
+        for dir_name, dir_path in [
+            ('icons', self.icons_dir),
+            ('second_icons', self.second_icons_dir),
+            ('third_icons', self.third_icons_dir)
+        ]:
+            if os.path.exists(dir_path):
+                files = os.listdir(dir_path)
+                logger.log(f"{dir_name} 目录存在，包含 {len(files)} 个文件")
+            else:
+                logger.log(f"警告: {dir_name} 目录不存在: {dir_path}", "WARNING")
+
     def build(self):
         try:
-            # 创建屏幕管理器（使用 NoTransition 去掉切换动画）
+            logger.log("开始构建 UI")
+
             self.sm = ScreenManager(transition=NoTransition())
 
-            # 第一页
+            logger.log("创建第一页")
             self.first_page = FirstPageScreen(app_instance=self, name='first_page')
             self.first_page.add_widget(self.first_page.build_ui())
             self.sm.add_widget(self.first_page)
+            logger.log("第一页创建成功")
 
-            # 第二页
+            logger.log("创建第二页")
             self.second_page = SecondPageScreen(app_instance=self, name='second_page')
             self.second_page.add_widget(self.second_page.build_ui())
             self.sm.add_widget(self.second_page)
+            logger.log("第二页创建成功")
 
-            # 第三页
+            logger.log("创建第三页")
             self.third_page = ThirdPageScreen(app_instance=self, name='third_page')
             self.third_page.add_widget(self.third_page.build_ui())
             self.sm.add_widget(self.third_page)
+            logger.log("第三页创建成功")
 
-            # 定时更新时间（每秒更新一次）
             Clock.schedule_interval(self.update_time, 1)
 
+            logger.log("UI 构建完成")
             return self.sm
 
         except Exception as e:
-            error_msg = f"应用启动失败\n\n错误: {str(e)}\n\n请检查日志"
-            print(error_msg)
-            traceback.print_exc()
+            logger.log_error("UI 构建失败", e)
 
-            # 返回一个简单的错误提示界面
             error_layout = BoxLayout(orientation='vertical')
             error_layout.add_widget(Label(
-                text=error_msg,
+                text=f"应用启动失败\n\n错误: {str(e)}\n\n日志已保存到:\n/storage/emulated/0/finance_app_logs/",
                 font_size='14sp',
                 halign='center'
             ))
@@ -207,6 +217,7 @@ class FinanceApp(App):
 
     def on_assets_click(self, instance):
         """跳转到第二页"""
+        logger.log("点击资产卡片，跳转到第二页")
         self.sm.current = 'second_page'
 
     def create_text_image(self, base_filename, text_positions):
@@ -218,13 +229,12 @@ class FinanceApp(App):
         try:
             img_path = os.path.join(self.icons_dir, base_filename)
             if os.path.exists(img_path):
+                logger.log(f"加载图片: {base_filename}")
                 img = Image.open(img_path).convert('RGBA')
                 draw = ImageDraw.Draw(img)
 
-                # 加载中文字体 - 兼容 Android
                 try:
                     if sys.platform == 'android':
-                        # Android 系统字体路径
                         font_paths = [
                             "/system/fonts/DroidSansFallback.ttf",
                             "/system/fonts/NotoSansCJK-Regular.ttc",
@@ -236,6 +246,7 @@ class FinanceApp(App):
                                 font_path = fp
                                 break
                         if font_path:
+                            logger.log(f"使用 Android 字体: {font_path}")
                             font_24 = ImageFont.truetype(font_path, 24)
                             font_16 = ImageFont.truetype(font_path, 16)
                             font_12 = ImageFont.truetype(font_path, 12)
@@ -243,27 +254,25 @@ class FinanceApp(App):
                         else:
                             raise Exception("No Chinese font found")
                     else:
-                        # Windows 系统字体路径
                         font_path = "C:/Windows/Fonts/msyh.ttc"
+                        logger.log(f"使用 Windows 字体: {font_path}")
                         font_24 = ImageFont.truetype(font_path, 24)
                         font_16 = ImageFont.truetype(font_path, 16)
                         font_12 = ImageFont.truetype(font_path, 12)
                         font_10 = ImageFont.truetype(font_path, 10)
-                except:
-                    # 使用默认字体
+                except Exception as e:
+                    logger.log_error(f"字体加载失败，使用默认字体", e)
                     font_24 = ImageFont.load_default()
                     font_16 = font_24
                     font_12 = font_24
                     font_10 = font_24
 
-                # 绘制每个文字
                 for item in text_positions:
                     if len(item) == 6:
                         x, y, text, font_size, color, bg_type = item
                     else:
                         x, y, text, font_size, color, bg_type, _ = item
 
-                    # 选择字体
                     if font_size == 24:
                         use_font = font_24
                     elif font_size == 16:
@@ -275,7 +284,6 @@ class FinanceApp(App):
                     else:
                         use_font = font_12
 
-                    # 固定的覆盖区域坐标
                     if bg_type == 'white':
                         cover_x = 180
                         cover_y = 70
@@ -305,7 +313,6 @@ class FinanceApp(App):
                         text_x = x
                         text_y = y
 
-                    # 绘制背景覆盖
                     if bg_type == 'loan':
                         bg_img_path = os.path.join(self.icons_dir, '贷款金额覆盖参考.png')
                         if os.path.exists(bg_img_path):
@@ -339,21 +346,20 @@ class FinanceApp(App):
                             fill=bg_type
                         )
 
-                    # 绘制新文字
                     draw.text((text_x, text_y), text, fill=color, font=use_font)
 
-                # 将 PIL Image 转换为 Kivy Image
                 img_byte_arr = BytesIO()
                 img.save(img_byte_arr, format='PNG')
                 img_byte_arr.seek(0)
                 core_image = CoreImage(BytesIO(img_byte_arr.read()), ext='png')
 
+                logger.log(f"图片处理成功: {base_filename}")
                 return core_image, img.size
             else:
+                logger.log(f"图片不存在: {img_path}", "WARNING")
                 return None, None
         except Exception as e:
-            print(f"创建文字图片失败：{e}")
-            traceback.print_exc()
+            logger.log_error(f"创建文字图片失败: {base_filename}", e)
             return None, None
 
     def create_status_bar(self):
@@ -363,6 +369,7 @@ class FinanceApp(App):
             img = KivyImage(source=img_path, size_hint=(1, 1), allow_stretch=True, keep_ratio=True)
             layout.add_widget(img)
         else:
+            logger.log("状态栏图片不存在，使用占位符", "WARNING")
             layout.add_widget(Label(text='状态栏', size_hint_y=None, height=50))
         return layout
 
@@ -380,6 +387,7 @@ class FinanceApp(App):
             container.add_widget(img_widget)
             return container
         else:
+            logger.log("用户卡片图片处理失败，使用占位符", "WARNING")
             return BoxLayout(size_hint_y=None, height=180)
 
     def create_menu(self):
@@ -389,6 +397,7 @@ class FinanceApp(App):
             img = KivyImage(source=img_path, size_hint=(1, 1), allow_stretch=True, keep_ratio=True)
             layout.add_widget(img)
         else:
+            logger.log("菜单图片不存在，使用占位符", "WARNING")
             layout.add_widget(Label(text='菜单', size_hint_y=None, height=80))
         return layout
 
@@ -416,6 +425,7 @@ class FinanceApp(App):
             container.add_widget(img_widget)
             return container
         else:
+            logger.log("资产卡片图片处理失败，使用占位符", "WARNING")
             return BoxLayout(size_hint_y=None, height=220)
 
     def create_income_card(self):
@@ -425,6 +435,7 @@ class FinanceApp(App):
             img = KivyImage(source=img_path, size_hint=(1, 1), allow_stretch=True, keep_ratio=True)
             layout.add_widget(img)
         else:
+            logger.log("收支卡片图片不存在，使用占位符", "WARNING")
             layout.add_widget(Label(text='本月收支', size_hint_y=None, height=150))
         return layout
 
@@ -435,9 +446,17 @@ class FinanceApp(App):
             img = KivyImage(source=img_path, size_hint=(1, 1), allow_stretch=True, keep_ratio=True)
             layout.add_widget(img)
         else:
+            logger.log("底部导航图片不存在，使用占位符", "WARNING")
             layout.add_widget(Label(text='底部导航', size_hint_y=None, height=60))
         return layout
 
 
 if __name__ == '__main__':
-    FinanceApp().run()
+    try:
+        logger.log("应用启动")
+        app = FinanceApp()
+        logger.log("开始运行应用")
+        app.run()
+    except Exception as e:
+        logger.log_error("应用运行异常", e)
+        raise
