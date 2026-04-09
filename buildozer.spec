@@ -19,25 +19,28 @@ source.include_exts = py,png,jpg,kv,atlas
 # 应用版本
 version = 1.0
 
-# 依赖包（指定兼容的 pyjnius 版本）
+# 依赖包
 requirements = python3,kivy==2.3.0,pyjnius==1.6.1
 
 # 屏幕方向
 orientation = portrait
 
-# 全屏模式
-fullscreen = 0
+# 全屏模式（Android 15 建议启用）
+fullscreen = 1
 
 # Android API 版本
-android.api = 33
+android.api = 34
 android.minapi = 21
 android.ndk_api = 21
 
 # 架构
 android.archs = arm64-v8a
 
-# 权限
-android.permissions =
+# 权限（添加基本权限）
+android.permissions = INTERNET,VIBRATE
+
+# Wakelock（防止屏幕休眠）
+android.wakelock = True
 
 # 应用描述
 android.app_description = Test Application
