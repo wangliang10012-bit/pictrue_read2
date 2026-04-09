@@ -1,13 +1,13 @@
 [app]
 
 # 应用标题
-title = Test App
+title = TestApp
 
 # 包名
 package.name = testapp
 
 # 包域名
-package.domain = com.test
+package.domain = com.testapp
 
 # 源代码目录
 source.dir = .
@@ -19,27 +19,33 @@ source.include_exts = py,png,jpg,kv,atlas
 # 应用版本
 version = 1.0
 
-# 依赖包
-requirements = python3,kivy==2.3.0,pyjnius==1.6.1
+# 依赖（稳定版本组合）
+requirements = python3==3.11.9,kivy==2.2.1
 
 # 屏幕方向
 orientation = portrait
 
-# 全屏模式（Android 15 建议启用）
-fullscreen = 1
+# 全屏模式
+fullscreen = 0
 
-# Android API 版本
+# Android API 版本（vivo Android 15 兼容性最好的版本）
 android.api = 34
-android.minapi = 21
-android.ndk_api = 21
+android.minapi = 24
+android.ndk_api = 24
+android.sdk = 34
+android.ndk = 27c
 
-# 架构
+# 架构（vivo X200 是 64 位）
 android.archs = arm64-v8a
 
-# 权限（添加基本权限）
-android.permissions = INTERNET,VIBRATE
+# 权限（vivo 需要明确声明）
+android.permissions = INTERNET,VIBRATE,WAKE_LOCK
 
-# Wakelock（防止屏幕休眠）
+# 禁用电池优化（vivo 重要配置）
+android.add_android_manifest_entries =
+    <uses-permission android:name="android.permission.REQUEST_IGNORE_BATTERY_OPTIMIZATIONS" />
+
+# Wakelock
 android.wakelock = True
 
 # 应用描述
@@ -48,8 +54,11 @@ android.app_description = Test Application
 # 允许备份
 android.allow_backup = True
 
-# 包名（完整）
-android.package_name = com.test.testapp
+# 调试模式（开发阶段启用）
+android.debug = True
+
+# 包名
+android.package_name = com.testapp.testapp
 
 # 作者
 author = Test Author
