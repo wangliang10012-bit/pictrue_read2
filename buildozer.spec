@@ -1,82 +1,68 @@
 [app]
 
 # 应用标题
-title = 中国工商银行
+title = Test App
 
 # 包名
-package.name = finance_app
+package.name = test_app
 
 # 包域名
-package.domain = org.create_app
+package.domain = org.test
 
 # 源代码目录
 source.dir = .
-source.main_entrypoint = main_kivy.py
+source.main_entrypoint = test_kivy.py
 
-# 包含的文件类型（确保 logger.py 被包含）
-source.include_exts = py,png,jpg,kv,atlas,ttc,jpeg
-source.include_patterns = icons/*,*.py
+# 包含的文件类型
+source.include_exts = py,png,jpg,kv,atlas
 
 # 应用版本
 version = 1.0.0
 
-# 依赖包（使用兼容 Android 15 的版本）
-requirements = python3,kivy==2.3.0,pillow,pyjnius
+# 最小依赖（只保留必需的）
+requirements = python3,kivy==2.2.1
 
 # 屏幕方向
 orientation = portrait
 
 # 全屏模式
-fullscreen = 1
+fullscreen = 0
 
-# Android 权限（Android 15 适配）
-android.permissions = INTERNET,ACCESS_NETWORK_STATE
+# Android 权限
+android.permissions = INTERNET
 
-# Android API 版本（支持 Android 15）
-android.api = 35
+# Android API 版本（使用稳定版本）
+android.api = 33
 android.minapi = 21
-android.sdk = 35
 android.ndk_api = 21
-android.ndk = 27b
+android.ndk = 25b
 android.archs = arm64-v8a
 
 # 跳过 SDK 更新
 android.skip_update = False
 
 # 应用描述
-android.app_description = 我的资产管理应用
+android.app_description = Test Application
 
 # 允许备份
 android.allow_backup = True
 
 # 背景颜色
-android.background_color = #f5f5f5
+android.background_color = #ffffff
 
 # 包名（完整）
-android.package_name = org.create_app.finance_app
-
-# 应用图标
-icon.filename = icons/应用图标.png
-
-# Android 入口点
-android.entrypoint = main
-
-# Bootstrap
-android.bootstrap = sdl2
+android.package_name = org.test.test_app
 
 # 作者
-author = Your Name
+author = Test
 
 # 邮箱
-author.email = your@email.com
-
-# 网址
-author.website = https://example.com
+author.email = test@test.com
 
 
 [buildozer]
 
-# 日志级别
+# 日志级别（提高到2以便调试）
 log_level = 2
 
 # Root 警告
@@ -88,5 +74,5 @@ build_dir = ./.buildozer
 # 输出目录
 bin_dir = ./bin
 
-# p4a 分支
-p4a.branch = develop
+# p4a 分支（使用稳定分支）
+p4a.branch = master
