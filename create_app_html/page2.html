@@ -1,0 +1,37 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, minimum-scale=1.0, user-scalable=no, viewport-fit=cover, target-densitydpi=device-dpi">
+    <title>住房贷款</title>
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+
+    <!-- 贷款金额 -->
+    <div class="image-container">
+        <img src="pictures/贷款金额.png" class="main-image" alt="贷款金额">
+        <div class="click-area" style="top: 0%; left: 0%; width: 14.4%; height: 19.0%;" onclick="navigateTo('index.html')"></div>
+        <div class="click-area" style="top: 23.8%; right: 0%; width: 23.9%; height: 47.6%;" onclick="navigateTo('page3.html')"></div>
+    </div>
+
+    <!-- 我的住房贷款 -->
+    <div class="image-container">
+        <img src="pictures/我的住房贷款.png" class="main-image" alt="住房贷款">
+        <div class="cover-bg" style="top: 58.8%; left: 23.0%; width: 21.1%; height: 9.2%;"></div>
+        <div class="overlay-text page2-text" id="housingPrincipal" style="top: 58.0%; left: 23.0%; font-size: 0.9rem;">
+            512,922.29
+        </div>
+        <img src="pictures/下期还款日期及还款金额覆盖底色.png" class="cover-image" style="top: 74.4%; left: 29.3%; width: 23.9%; height: 9.2%;" alt="">
+        <div class="overlay-text page2-text" id="nextRepaymentAmount" style="top: 74.4%; left: 29.3%; font-size: 0.9rem;">
+            2,453.80
+        </div>
+        <img src="pictures/下期还款日期及还款金额覆盖底色.png" class="cover-image" style="top: 74.4%; left: 73.2%; width: 22.7%; height: 9.8%;" alt="">
+        <div class="overlay-text red-text" id="nextRepaymentDate" style="top: 74.8%; left: 74.2%; font-size: 0.9rem;">
+            2026-04-27
+        </div>
+    </div>
+
+    <script src="script.js"></script>
+</body>
+</html>

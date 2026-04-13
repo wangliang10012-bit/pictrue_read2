@@ -1,0 +1,55 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, minimum-scale=1.0, user-scalable=no, viewport-fit=cover, target-densitydpi=device-dpi">
+    <title>中国工商银行</title>
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+
+    <!-- 状态栏 -->
+    <div class="image-container">
+        <img src="pictures/设置_消息_按钮.png" class="main-image" alt="状态栏">
+    </div>
+
+    <!-- 个人信息 -->
+    <div class="image-container">
+        <img src="pictures/个人信息.png" class="main-image" alt="个人信息">
+        <img src="pictures/权益中心下时间的覆盖色.png" class="cover-image" style="top: 41.8%; left: 26.6%; width: 59.0%; height: 9.5%;" alt="">
+        <div class="overlay-text gray-text" id="loginTime" style="top: 41.8%; left: 26.6%; font-size: 0.8rem;">
+            上次登录 加载中...
+        </div>
+    </div>
+
+    <!-- 菜单 -->
+    <div class="image-container">
+        <img src="pictures/年度账单_商城订单_信用报告_办理进度_更多.png" class="main-image" alt="菜单">
+    </div>
+
+    <!-- 资产负债 -->
+    <div class="image-container click-target" onclick="navigateTo('page2.html')">
+        <img src="pictures/我的资产负债.png" class="main-image" alt="资产负债">
+        <div class="cover-bg" style="top: 33.5%; left: 53.0%; width: 37.9%; height: 11.8%;"></div>
+        <div class="overlay-text" style="top: 34.5%; left: 54.0%; font-size: 1.7rem;">
+            512,922.29
+        </div>
+        <div class="cover-bg" style="top: 62.4%; left: 62.8%; width: 22.9%; height: 7.1%;"></div>
+        <div class="overlay-text" style="top: 62.4%; left: 64.0%; font-size: 0.95rem;">
+            512,922.29
+        </div>
+    </div>
+
+    <!-- 本月收支 -->
+    <div class="image-container">
+        <img src="pictures/我的本月收支.png" class="main-image" alt="本月收支">
+    </div>
+
+    <!-- 底部导航 -->
+    <div class="image-container">
+        <img src="pictures/底部按钮.png" class="main-image" alt="底部导航">
+    </div>
+
+    <script src="script.js"></script>
+</body>
+</html>
