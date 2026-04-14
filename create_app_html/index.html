@@ -32,12 +32,24 @@
     <!-- 资产负债 -->
     <div class="image-container click-target" onclick="navigateTo('page2.html')">
         <img src="pictures/我的资产负债.png" class="main-image" alt="资产负债">
-        <div class="cover-bg" style="top: 33.5%; left: 53.0%; width: 37.9%; height: 11.8%;"></div>
-        <div class="overlay-text" style="top: 34.5%; left: 54.0%; font-size: 1.7rem;">
+
+        <!-- 时间覆盖背景 -->
+        <img src="pictures/时间覆盖背景底色.png" class="cover-image" style="top: 6.8%; left: 7%; width: 38%; height: 5%;" alt="">
+
+        <!-- 动态时间文字 -->
+        <div class="overlay-text gray-text" id="currentTime" style="top: 6.8%; left: 8%; font-size: 0.7rem;">
+            时间 加载中...
+        </div>
+
+        <!-- 总负债覆盖层 -->
+        <div class="cover-bg" style="top: 41.5%; left: 55.0%; width: 37.9%; height: 11.8%;"></div>
+        <div class="overlay-text" style="top: 42.5%; left: 55.0%; font-size: 1.6rem;">
             512,922.29
         </div>
-        <div class="cover-bg" style="top: 62.4%; left: 62.8%; width: 22.9%; height: 7.1%;"></div>
-        <div class="overlay-text" style="top: 62.4%; left: 64.0%; font-size: 0.95rem;">
+
+        <!-- 贷款金额覆盖层 -->
+        <img src="pictures/贷款进度底色.png" class="cover-image" style="top: 68.4%; left: 62.0%; width: 22.9%; height: 7.1%;" alt="">
+        <div class="overlay-text" style="top: 68.0%; left: 62.0%; font-size: 0.95rem;">
             512,922.29
         </div>
     </div>
